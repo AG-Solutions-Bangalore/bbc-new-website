@@ -1,35 +1,34 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
-import {
-  Typography,
-  Button,
-  IconButton,
-} from "@material-tailwind/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 
 export function Navbar({ routes, action }) {
-  const [openNav, setOpenNav] = React.useState(false);
-  const { scrollY } = useScroll();
+  const [openNav, setOpenNav] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const navRef = useRef(null);
-  
-  const width = useTransform(scrollY, [0, 100], ["100%", "100%"]);
-  const left = useTransform(scrollY, [0, 100], ["50%", "0%"]);
-  const translateX = useTransform(scrollY, [0, 100], ["-50%", "0%"]);
-  const navbarHeight = useTransform(scrollY, [0, 100], ["4.5rem", "4rem"]);
-  const backgroundColor = useTransform(
-    scrollY,
-    [0, 100],
-    ["rgba(255, 255, 255, 0.7)", "rgba(255, 255, 255, 0.95)"]
-  );
-  const boxShadow = useTransform(
-    scrollY, 
-    [0, 100], 
-    ["0 4px 12px rgba(0,0,0,0.05)", "0 2px 8px rgba(0,0,0,0.1)"]
-  );
-  const borderRadius = useTransform(scrollY, [0, 100], ["0rem", "0rem"]);
-  
+
+  useEffect(() => {
+    let ticking = false;
+
+    const updateNavbar = () => {
+      setScrolled(window.scrollY > 100);
+      ticking = false;
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateNavbar);
+        ticking = true;
+      }
+    };
+
+    updateNavbar();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // Close menu when clicking outside or pressing escape
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -37,7 +36,7 @@ export function Navbar({ routes, action }) {
         setOpenNav(false);
       }
     };
-    
+
     const handleEscKey = (event) => {
       if (event.key === 'Escape' && openNav) {
         setOpenNav(false);
@@ -46,14 +45,14 @@ export function Navbar({ routes, action }) {
 
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleEscKey);
-    
+
     // Lock body scroll when menu is open
     if (openNav) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-    
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEscKey);
@@ -68,7 +67,7 @@ export function Navbar({ routes, action }) {
         setOpenNav(false);
       }
     };
-    
+
     window.addEventListener("resize", handleResize);
     return () => {
       window.removeEventListener("resize", handleResize);
@@ -78,11 +77,8 @@ export function Navbar({ routes, action }) {
   const navList = (
     <ul className="mb-0 mt-0 flex flex-col gap-1 lg:mb-0 lg:mt-0 lg:flex-row lg:items-center lg:gap-6">
       {routes.map(({ name, path, icon, href, target }) => (
-        <Typography
+        <li
           key={name}
-          as="li"
-          variant="small"
-          color="black"
           className="capitalize p-0"
         >
           {href ? (
@@ -112,7 +108,7 @@ export function Navbar({ routes, action }) {
               {name}
             </Link>
           )}
-        </Typography>
+        </li>
       ))}
     </ul>
   );
@@ -121,11 +117,12 @@ export function Navbar({ routes, action }) {
   const mobileNavList = (
     <div className="flex flex-col space-y-6">
       {routes.map(({ name, path, icon, href, target }, index) => (
-        <motion.div
+        <div
           key={name}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 + index * 0.1, duration: 0.4 }}
+          className={`transition-all duration-300 ${
+            openNav ? "translate-x-0 opacity-100" : "-translate-x-5 opacity-0"
+          }`}
+          style={{ transitionDelay: openNav ? `${100 + index * 100}ms` : "0ms" }}
         >
           {href ? (
             <a
@@ -154,38 +151,45 @@ export function Navbar({ routes, action }) {
               {name}
             </Link>
           )}
-        </motion.div>
+        </div>
       ))}
     </div>
   );
 
   return (
     <>
-      <motion.div
+      <div
         className="fixed top-0 z-50"
         style={{
-          width,
-          left,
-          translateX,
+          width: "100%",
+          left: scrolled ? "0%" : "50%",
+          transform: scrolled ? "translateX(0%)" : "translateX(-50%)",
         }}
         ref={navRef}
       >
-        <motion.div
+        <div
           style={{
-            backgroundColor,
-            borderRadius,
-            boxShadow,
-            height: navbarHeight,
+            backgroundColor: scrolled
+              ? "rgba(255, 255, 255, 0.95)"
+              : "rgba(255, 255, 255, 0.7)",
+            borderRadius: "0rem",
+            boxShadow: scrolled
+              ? "0 2px 8px rgba(0,0,0,0.1)"
+              : "0 4px 12px rgba(0,0,0,0.05)",
+            height: scrolled ? "4rem" : "4.5rem",
           }}
           className="transition-all duration-300 ease-in-out backdrop-blur-sm"
         >
           <div className="px-3 h-full">
             <div className="container mx-auto flex items-center justify-between h-full">
-              <Link to="/">
+              <Link to="/" aria-label="Business Boosters home">
                 <div className="flex items-center py-1 px-2">
-                  <img 
-                    src="https://businessboosters.club/static/media/logo.b092c9f492105e973cc3.png" 
-                    alt="Business Boosters Logo" 
+                  <img
+                    src="https://businessboosters.club/static/media/logo.b092c9f492105e973cc3.png"
+                    alt="Business Boosters Logo"
+                    width="196"
+                    height="48"
+                    decoding="async"
                     className=" h-12 w-auto "
                   />
                 </div>
@@ -193,24 +197,31 @@ export function Navbar({ routes, action }) {
               <div className="hidden lg:block">{navList}</div>
               <div className="hidden gap-1 lg:flex items-center">
                 <Link to='/register'>
-                  <Button variant="text" className="py-1.5 px-3 text-sm text-[#A51B64]">
+                  <button
+                    type="button"
+                    className="align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none rounded-lg hover:bg-gray-900/10 active:bg-gray-900/20 py-1.5 px-3 text-sm text-[#A51B64]"
+                  >
                     Join Us
-                  </Button>
+                  </button>
                 </Link>
                 <a
-                  href="https://login.businessboosters.club/login"
+                  href="https://businessboosters.club/login"
                   target="_blank"
                   rel="noreferrer"
                 >
-                  <Button variant="text" className="py-1.5 px-3 text-sm text-[#A51B64]">
+                  <button
+                    type="button"
+                    className="align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none rounded-lg hover:bg-gray-900/10 active:bg-gray-900/20 py-1.5 px-3 text-sm text-[#A51B64]"
+                  >
                     Login
-                  </Button>
+                  </button>
                 </a>
               </div>
-              <IconButton
-                variant="text"
-                size="sm"
-                className="ml-auto lg:hidden h-8 w-8 flex items-center justify-center z-50 relative"
+              <button
+                type="button"
+                aria-label={openNav ? "Close navigation menu" : "Open navigation menu"}
+                aria-expanded={openNav}
+                className="ml-auto lg:hidden h-8 w-8 flex items-center justify-center z-50 relative rounded-lg align-middle select-none font-sans font-medium text-center uppercase transition-all hover:bg-gray-900/10 active:bg-gray-900/20"
                 onClick={() => setOpenNav(!openNav)}
               >
                 {openNav ? (
@@ -218,96 +229,89 @@ export function Navbar({ routes, action }) {
                 ) : (
                   <Bars3Icon strokeWidth={2} className="h-5 w-5" />
                 )}
-              </IconButton>
+              </button>
             </div>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {/* Full-page mobile menu overlay */}
-      <AnimatePresence>
-        {openNav && (
-          <motion.div 
-            className="fixed inset-0 z-40 lg:hidden"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
+      <div
+        className={`fixed inset-0 z-40 transition-opacity duration-300 lg:hidden ${
+          openNav ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+        }`}
+      >
             {/* Background gradient overlay */}
-            <motion.div 
-              className="absolute inset-0 bg-gradient-to-br from-[#A51B64] to-[#4A064D]"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.98 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
+            <div
+              className={`absolute inset-0 bg-gradient-to-br from-[#A51B64] to-[#4A064D] transition-opacity duration-300 ${
+                openNav ? "opacity-[0.98]" : "opacity-0"
+              }`}
             />
-            
+
             {/* Content container */}
             <div className="relative h-full w-full flex flex-col p-6 overflow-y-auto">
               {/* Logo */}
-             
+
               {/* Divider */}
-              <motion.div 
-                className="w-16 h-1 bg-pink-300 rounded mx-auto mb-10"
-                initial={{ width: 0 }}
-                animate={{ width: 64 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
+              <div
+                className={`h-1 bg-pink-300 rounded mx-auto mb-10 transition-all duration-500 ${
+                  openNav ? "w-16" : "w-0"
+                }`}
+                style={{ transitionDelay: openNav ? "300ms" : "0ms" }}
               />
-              
+
               {/* Navigation items */}
               <div className="flex-1 flex flex-col items-center justify-center">
                 {mobileNavList}
               </div>
-              
+
               {/* Action buttons */}
-              <motion.div 
-                className="mt-8 mb-12 space-y-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + routes.length * 0.1, duration: 0.5 }}
+              <div
+                className={`mt-8 mb-12 space-y-4 transition-all duration-500 ${
+                  openNav ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
+                }`}
+                style={{
+                  transitionDelay: openNav ? `${400 + routes.length * 100}ms` : "0ms",
+                }}
               >
                 <Link to='/register' className="block">
-                  <Button 
-                    size="lg"
-                    fullWidth
+                  <button
+                    type="button"
                     onClick={() => setOpenNav(false)}
-                    className="py-3 text-base bg-white text-[#A51B64] hover:bg-pink-50 transition-colors"
+                    className="w-full rounded-lg py-3 px-7 text-base bg-white text-[#A51B64] hover:bg-pink-50 transition-colors align-middle select-none font-sans font-bold text-center uppercase"
                   >
                     Join Us
-                  </Button>
+                  </button>
                 </Link>
                 <a
-                  href="https://login.businessboosters.club/login"
+                  href="https://businessboosters.club/login"
                   target="_blank"
                   rel="noreferrer"
                   className="block"
                 >
-                  <Button 
-                    variant="outlined"
-                    size="lg"
-                    fullWidth
+                  <button
+                    type="button"
                     onClick={() => setOpenNav(false)}
-                    className="py-3 text-base border-white text-white hover:bg-white/10 transition-colors"
+                    className="w-full rounded-lg py-3 px-7 text-base border border-white text-white hover:bg-white/10 transition-colors align-middle select-none font-sans font-bold text-center uppercase"
                   >
                     Login
-                  </Button>
+                  </button>
                 </a>
-              </motion.div>
-              
+              </div>
+
               {/* Social links or other footer info could go here */}
-              <motion.div 
-                className="text-center text-white/80 text-sm"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 + routes.length * 0.1, duration: 0.5 }}
+              <div
+                className={`text-center text-white/80 text-sm transition-opacity duration-500 ${
+                  openNav ? "opacity-100" : "opacity-0"
+                }`}
+                style={{
+                  transitionDelay: openNav ? `${600 + routes.length * 100}ms` : "0ms",
+                }}
               >
                 Connect with Business Boosters
-              </motion.div>
+              </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </div>
     </>
   );
 }
@@ -325,7 +329,6 @@ Navbar.propTypes = {
 Navbar.displayName = "/src/widgets/layout/navbar.jsx";
 
 export default Navbar;
-
 
 
 

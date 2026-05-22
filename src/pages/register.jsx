@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Footer } from "@/widgets/layout";
-import { Button, Card, Input, Option, Select, Textarea } from "@material-tailwind/react";
+import { Footer } from "@/widgets/layout/footer";
+import { Button } from "@material-tailwind/react/components/Button";
+import { Card } from "@material-tailwind/react/components/Card";
+import { Input } from "@material-tailwind/react/components/Input";
+import { Option, Select } from "@material-tailwind/react/components/Select";
+import { Textarea } from "@material-tailwind/react/components/Textarea";
 import { useNavigate } from "react-router-dom";
 
 export function Register() {

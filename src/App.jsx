@@ -1,16 +1,17 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 
-import Register from "./pages/register";
-import { Navbar } from "./widgets/layout";
+import { Navbar } from "./widgets/layout/navbar";
 import routes from "./routes";
-import Interest from "./pages/interest";
-import ThankYou from "./pages/thankyou";
-import Failure from "./pages/failure";
-import BusinessProfile from "./pages/business-profile";
 import Floating from "./pages/floating";
-import Feedback from "./pages/feedback";
+
+const Register = lazy(() => import("./pages/register"));
+const Interest = lazy(() => import("./pages/interest"));
+const ThankYou = lazy(() => import("./pages/thankyou"));
+const Failure = lazy(() => import("./pages/failure"));
+const Feedback = lazy(() => import("./pages/feedback"));
+const BusinessProfile = lazy(() => import("./pages/business-profile"));
 
 function App() {
   const { pathname } = useLocation();
@@ -22,19 +23,23 @@ function App() {
         <Navbar routes={routes} />
       )}
       <Floating />
-      <Routes>
-        {routes.map(
-          ({ path, element }, key) =>
-            element && <Route key={key} exact path={path} element={element} />
-        )}
-        <Route path="*" element={<Navigate to="/home" replace />} />
-        <Route path="/register" element={<Register/>} />
-        <Route path="/interest" element={<Interest/>} />
-        <Route path="/thankyou" element={<ThankYou/>} />
-        <Route path="/failure" element={<Failure/>} />
-        <Route path="/feedback" element={<Feedback/>} />
-        <Route path="/business-profile/:id" element={<BusinessProfile/>} />
-      </Routes>
+      <main>
+        <Suspense fallback={null}>
+          <Routes>
+            {routes.map(
+              ({ path, element }, key) =>
+                element && <Route key={key} path={path} element={element} />
+            )}
+            <Route path="*" element={<Navigate to="/home" replace />} />
+            <Route path="/register" element={<Register/>} />
+            <Route path="/interest" element={<Interest/>} />
+            <Route path="/thankyou" element={<ThankYou/>} />
+            <Route path="/failure" element={<Failure/>} />
+            <Route path="/feedback" element={<Feedback/>} />
+            <Route path="/business-profile/:id" element={<BusinessProfile/>} />
+          </Routes>
+        </Suspense>
+      </main>
     </>
   );
 }
