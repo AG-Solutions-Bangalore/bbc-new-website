@@ -1,12 +1,10 @@
-import { Footer } from "@/widgets/layout";
+import { Footer } from "@/widgets/layout/footer";
 import { EnvelopeIcon, MapPinIcon, PhoneIcon } from "@heroicons/react/24/solid";
-import {
-  Button,
-  Typography,
-  Card,
-  Input,
-  Textarea,
-} from "@material-tailwind/react";
+import { Button } from "@material-tailwind/react/components/Button";
+import { Card } from "@material-tailwind/react/components/Card";
+import { Input } from "@material-tailwind/react/components/Input";
+import { Textarea } from "@material-tailwind/react/components/Textarea";
+import { Typography } from "@material-tailwind/react/components/Typography";
 import axios from "axios";
 import React, { useState } from "react";
 

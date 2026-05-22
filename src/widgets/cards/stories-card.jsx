@@ -1,6 +1,7 @@
-import React, { useRef, useState } from "react";
+import React, { memo, useRef, useState } from "react";
 import PropTypes from "prop-types";
-import { Card, Typography, IconButton, Avatar } from "@material-tailwind/react";
+import { Typography } from "@material-tailwind/react/components/Typography";
+import { IconButton } from "@material-tailwind/react/components/IconButton";
 import Slider from "react-slick";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
@@ -9,7 +10,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 // Real Stories Carousel Component
-export function RealStoriesSection({ storiesData }) {
+export const RealStoriesSection = memo(function RealStoriesSection({ storiesData }) {
   const sliderRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -56,10 +57,13 @@ export function RealStoriesSection({ storiesData }) {
                         ></div>
 
                         {/* Avatar */}
-                        <Avatar
+                        <img
                           src={img}
                           alt={name}
-                          size="xxl"
+                          width="288"
+                          height="288"
+                          loading="lazy"
+                          decoding="async"
                           className="h-72 w-72 rounded-full border-4 border-white shadow-lg shadow-gray-500/25 relative z-10 transform transition-transform duration-300 group-hover:scale-105"
                         />
                       </div>
@@ -75,6 +79,7 @@ export function RealStoriesSection({ storiesData }) {
                   color="blue-gray"
                   size="lg"
                   onClick={handlePrev}
+                  aria-label="Previous story"
                   className="rounded-full"
                 >
                   <ChevronLeftIcon strokeWidth={2} className="h-6 w-6" />
@@ -84,6 +89,7 @@ export function RealStoriesSection({ storiesData }) {
                   color="blue-gray"
                   size="lg"
                   onClick={handleNext}
+                  aria-label="Next story"
                   className="rounded-full"
                 >
                   <ChevronRightIcon strokeWidth={2} className="h-6 w-6" />
@@ -111,7 +117,7 @@ export function RealStoriesSection({ storiesData }) {
       </div>
     </section>
   );
-}
+});
 
 RealStoriesSection.propTypes = {
   storiesData: PropTypes.arrayOf(
@@ -122,3 +128,5 @@ RealStoriesSection.propTypes = {
     })
   ).isRequired,
 };
+
+export default RealStoriesSection;

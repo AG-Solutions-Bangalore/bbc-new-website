@@ -1,10 +1,7 @@
 import PropTypes from "prop-types";
-import {
-  Card,
-  CardBody,
-  Typography,
-  IconButton,
-} from "@material-tailwind/react";
+import { Card, CardBody } from "@material-tailwind/react/components/Card";
+import { Typography } from "@material-tailwind/react/components/Typography";
+import { IconButton } from "@material-tailwind/react/components/IconButton";
 
 export function FeatureCard({ color, icon, title, description }) {
   return (

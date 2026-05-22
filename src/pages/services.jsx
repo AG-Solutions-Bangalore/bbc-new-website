@@ -1,6 +1,11 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { Typography } from "@material-tailwind/react";
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   MapPinIcon,
   MagnifyingGlassIcon,
@@ -12,19 +17,32 @@ import {
   XMarkIcon,
 
 } from "@heroicons/react/24/solid";
-import { Footer } from "@/widgets/layout";
+import { Footer } from "@/widgets/layout/footer";
 import PartnerCardSkeleton from "@/widgets/cards/partner-card-skeleton";
+import { fetchUsers, getUserImageUrl } from "@/lib/api";
 
+const INITIAL_VISIBLE_PARTNERS = 12;
+const PARTNER_BATCH_SIZE = 16;
 
-const PartnerCard = ({ partner, openDialog }) => {
+const PartnerCard = memo(function PartnerCard({ partner, openDialog }) {
+  const shareText = encodeURIComponent(
+    [partner.name, partner.mobile, partner.company, partner.occupation]
+      .filter(Boolean)
+      .join(" ")
+  );
+
   return (
     <div className="bg-white rounded-lg shadow hover:shadow-xl transition-all duration-300 overflow-hidden">
       <div className="flex flex-col h-full">
         <div className="flex p-4">
           <div className="mr-3 flex-shrink-0">
             <img
-              src={partner.image ? `http://businessboosters.club/public/images/user_images/${partner.image}` : "http://businessboosters.club/public/images/user_images/no_images.png"}
+              src={getUserImageUrl(partner.image)}
               alt={partner.name}
+              width="64"
+              height="112"
+              loading="lazy"
+              decoding="async"
               className="h-[7rem] w-[4rem] rounded-lg object-cover border-2 border-gray-200"
             />
           </div>
@@ -73,26 +91,31 @@ const PartnerCard = ({ partner, openDialog }) => {
 
 
             <a
-
-              href={`https://api.whatsapp.com/send/?text=${partner.name} ${partner.mobile} ${partner.company} ${partner.occupation}`}
+              aria-label={`Share ${partner.name} profile on WhatsApp`}
+              className="flex items-center justify-center px-4 py-2 text-sm text-gray-600 hover:bg-blue-50 transition-colors"
+              href={`https://api.whatsapp.com/send/?text=${shareText}`}
               target="_blank"
+              rel="noopener noreferrer"
             >
-              <button className="flex items-center justify-center px-4 py-2 text-sm text-gray-600 hover:bg-blue-50 transition-colors">
-                <ShareIcon className="h-4 w-4" />
-              </button>
+              <ShareIcon className="h-4 w-4" />
             </a>
           </div>
         </div>
       </div>
     </div>
   );
-};
+});
 
 
-const PartnerProfileDialog = ({ open, handleClose, partner }) => {
-
+const PartnerProfileDialog = memo(function PartnerProfileDialog({ open, handleClose, partner }) {
 
   if (!partner || !open) return null;
+
+  const shareText = encodeURIComponent(
+    [partner.name, partner.mobile, partner.company, partner.occupation]
+      .filter(Boolean)
+      .join(" ")
+  );
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 md:p-4 overflow-y-auto">
@@ -100,7 +123,7 @@ const PartnerProfileDialog = ({ open, handleClose, partner }) => {
         {/* Header */}
         <div className="relative px-6 py-4 flex items-center justify-between border-b border-gray-200">
           <div className="flex items-center">
-           
+
             <div>
               <h2 className="text-lg font-semibold text-gray-900">{partner.name}</h2>
               <p className="text-xs text-gray-500">{partner.occupation || partner.category || ""}</p>
@@ -108,6 +131,7 @@ const PartnerProfileDialog = ({ open, handleClose, partner }) => {
           </div>
 
           <button
+            aria-label="Close partner profile"
             className="rounded-full p-2 hover:bg-gray-100 transition-colors"
             onClick={handleClose}
           >
@@ -122,8 +146,11 @@ const PartnerProfileDialog = ({ open, handleClose, partner }) => {
             <div className="flex flex-row w-full">
             <div className="h-[12rem] w-36 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 mr-3">
               <img
-                src={partner.image ? `http://businessboosters.club/public/images/user_images/${partner.image}` : "http://businessboosters.club/public/images/user_images/no_images.png"}
+                src={getUserImageUrl(partner.image)}
                 alt={partner.name}
+                width="144"
+                height="192"
+                decoding="async"
                 className="h-full w-full object-cover"
               />
             </div>
@@ -139,7 +166,7 @@ const PartnerProfileDialog = ({ open, handleClose, partner }) => {
               )}
             </div>
             </div>
-          
+
 
             {/* Contact Information */}
             <div className="space-y-6">
@@ -195,9 +222,10 @@ const PartnerProfileDialog = ({ open, handleClose, partner }) => {
             Close
           </button>
           <a
-
-            href={`https://api.whatsapp.com/send/?text=${partner.name} ${partner.mobile} ${partner.company} ${partner.occupation}`}
+            aria-label={`Share ${partner.name} profile on WhatsApp`}
+            href={`https://api.whatsapp.com/send/?text=${shareText}`}
             target="_blank"
+            rel="noopener noreferrer"
           >
             <button
               className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm transition-colors"
@@ -209,41 +237,45 @@ const PartnerProfileDialog = ({ open, handleClose, partner }) => {
       </div>
     </div>
   );
-};
+});
 export function Services() {
   const [partners, setPartners] = useState([]);
-  const [filteredPartners, setFilteredPartners] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState(null);
+  const [sortKey, setSortKey] = useState("");
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_PARTNERS);
+  const loadMoreRef = useRef(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchPartners = async () => {
       try {
-        const response = await axios.get("https://businessboosters.club/public/api/getUser");
-        if (response.data && response.data.profile) {
-          setPartners(response.data.profile);
-          setFilteredPartners(response.data.profile);
-        }
+        const users = await fetchUsers();
+        if (isMounted) setPartners(users);
       } catch (error) {
         console.error("Error fetching partners:", error);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchPartners();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  useEffect(() => {
+  const filteredPartners = useMemo(() => {
     if (searchQuery.trim() === "") {
-      setFilteredPartners(partners);
-      return;
+      return partners;
     }
 
     const query = searchQuery.toLowerCase();
-    const filtered = partners.filter(partner => {
+    return partners.filter(partner => {
       const searchableFields = [
         partner.name,
         partner.occupation,
@@ -254,33 +286,73 @@ export function Services() {
       ].filter(Boolean);
 
       return searchableFields.some(field =>
-        field.toLowerCase().includes(query)
+        String(field).toLowerCase().includes(query)
       );
     });
-
-    setFilteredPartners(filtered);
   }, [searchQuery, partners]);
-  const sortPartnersByName = () => {
-    const sortedPartners = [...filteredPartners].sort((a, b) => a.name.localeCompare(b.name));
-    setFilteredPartners(sortedPartners);
-  };
-  const sortPartnersByCompany = () => {
-    const sortedPartners = [...filteredPartners].sort((a, b) => {
-      const companyA = a.company || ""; 
-      const companyB = b.company || ""; 
-      return companyA.localeCompare(companyB);
+
+  const sortedPartners = useMemo(() => {
+    if (!sortKey) return filteredPartners;
+
+    return [...filteredPartners].sort((a, b) => {
+      if (sortKey === "company") {
+        const companyA = a.company || "";
+        const companyB = b.company || "";
+        return companyA.localeCompare(companyB);
+      }
+
+      return (a.name || "").localeCompare(b.name || "");
     });
-    setFilteredPartners(sortedPartners);
-  };
-  
-  const handleOpenDialog = (partner) => {
+  }, [filteredPartners, sortKey]);
+
+  const visiblePartners = useMemo(
+    () => sortedPartners.slice(0, visibleCount),
+    [sortedPartners, visibleCount]
+  );
+
+  useEffect(() => {
+    setVisibleCount(INITIAL_VISIBLE_PARTNERS);
+  }, [partners.length, searchQuery, sortKey]);
+
+  useEffect(() => {
+    if (loading || visibleCount >= sortedPartners.length) return undefined;
+
+    const node = loadMoreRef.current;
+    if (!node || !("IntersectionObserver" in window)) return undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisibleCount((count) =>
+            Math.min(count + PARTNER_BATCH_SIZE, sortedPartners.length)
+          );
+        }
+      },
+      { rootMargin: "800px" }
+    );
+
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, [loading, sortedPartners.length, visibleCount]);
+
+  const sortPartnersByName = useCallback(() => {
+    setSortKey("name");
+  }, []);
+
+  const sortPartnersByCompany = useCallback(() => {
+    setSortKey("company");
+  }, []);
+
+  const handleOpenDialog = useCallback((partner) => {
     setSelectedPartner(partner);
     setDialogOpen(true);
-  };
+  }, []);
 
-  const handleCloseDialog = () => {
+  const handleCloseDialog = useCallback(() => {
     setDialogOpen(false);
-  };
+    setSelectedPartner(null);
+  }, []);
   const PartnersSkeleton = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {Array(12).fill(0).map((_, index) => (
@@ -293,9 +365,9 @@ export function Services() {
     <>
       <section className="relative block h-[25vh]  bg-white mt-4 md:mt-8">
         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-r from-gray-100 to-gray-300">
-          <Typography variant="h1" color="gray" className="text-center font-bold text-4xl  mt-10 md:mt-0">
+          <h1 className="block antialiased tracking-normal font-sans leading-tight text-center font-bold text-4xl  mt-10 md:mt-0 text-gray-700">
             Our Awesome Partners
-          </Typography>
+          </h1>
         </div>
       </section>
 
@@ -324,16 +396,13 @@ export function Services() {
           <div className="mt-8">
             {loading ? (
                <PartnersSkeleton />
-            ) : filteredPartners.length === 0 ? (
+            ) : sortedPartners.length === 0 ? (
               <div className="flex justify-center items-center py-12 bg-white rounded-lg shadow">
                 <p className="text-gray-700">No partners found matching your search.</p>
               </div>
             ) : (
               <>
-                <div className="mb-5 flex justify-between items-center">
-                  <h2 className="text-xl font-bold text-gray-900">
-                    
-                  </h2>
+                <div className="mb-5 flex justify-end items-center">
                   <div className="flex gap-2">
                     <button onClick={sortPartnersByName}
                       className="px-3 py-1 text-sm border border-gray-300 rounded bg-white hover:bg-gray-50 transition-colors">
@@ -347,7 +416,7 @@ export function Services() {
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {filteredPartners.map((partner) => (
+                  {visiblePartners.map((partner) => (
                     <PartnerCard
                       key={partner.id}
                       partner={partner}
@@ -355,6 +424,9 @@ export function Services() {
                     />
                   ))}
                 </div>
+                {visibleCount < sortedPartners.length && (
+                  <div ref={loadMoreRef} aria-hidden="true" className="h-px" />
+                )}
               </>
             )}
           </div>

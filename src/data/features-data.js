@@ -21,7 +21,7 @@ export const featuresData = [
   },
   {
     color: "gray",
-    link: "https://login.businessboosters.club/login",
+    link: "https://businessboosters.club/login",
     title: "Login",
     icon: CiLogin,
     description:
