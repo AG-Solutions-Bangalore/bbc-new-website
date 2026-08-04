@@ -89,25 +89,38 @@ export function Home() {
       <section className="-mt-32 bg-white px-4 pb-20 pt-4">
         <div className="container mx-auto">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {featuresData.map(({ title, icon, description, link }, index) => (
-              <div
-                key={title}
-                className="home-feature-card"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <Link to={link} className="block">
-                  <div className="transition-transform duration-300 hover:-translate-y-2.5 hover:scale-105 hover:shadow-xl">
-                    <HomeFeatureCard
-                      title={title}
-                      icon={React.createElement(icon, {
-                        className: "w-5 h-5 text-white",
-                      })}
-                      description={description}
-                    />
-                  </div>
-                </Link>
-              </div>
-            ))}
+            {featuresData.map(({ title, icon, description, link }, index) => {
+              const isExternal = link.startsWith("http");
+              const cardContent = (
+                <div className="transition-transform duration-300 hover:-translate-y-2.5 hover:scale-105 hover:shadow-xl">
+                  <HomeFeatureCard
+                    title={title}
+                    icon={React.createElement(icon, {
+                      className: "w-5 h-5 text-white",
+                    })}
+                    description={description}
+                  />
+                </div>
+              );
+
+              return (
+                <div
+                  key={title}
+                  className="home-feature-card"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  {isExternal ? (
+                    <a href={link} className="block">
+                      {cardContent}
+                    </a>
+                  ) : (
+                    <Link to={link} className="block">
+                      {cardContent}
+                    </Link>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           {loadDeferredSections && (

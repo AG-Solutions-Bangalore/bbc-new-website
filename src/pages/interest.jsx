@@ -70,7 +70,22 @@ export function Interest() {
       newErrors.person_join = "You must agree to join BBC";
     }
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    const hasErrors = Object.keys(newErrors).length > 0;
+    if (hasErrors) {
+      const firstErrorKey = Object.keys(newErrors)[0];
+      setTimeout(() => {
+        const firstErrorEl = document.querySelector(
+          `[name="${firstErrorKey}"], #${firstErrorKey}, [id="${firstErrorKey}"]`
+        );
+        if (firstErrorEl) {
+          firstErrorEl.focus();
+          firstErrorEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 50);
+    }
+
+    return !hasErrors;
   };
 
   const handleSubmit = async (e) => {
@@ -190,6 +205,8 @@ export function Interest() {
               <Select
                 variant="static"
                 required
+                name="person_occupation"
+                id="person_occupation"
                 label="Occupation *"
                 labelProps={{ className: "text-[#A41460]" }}
                 value={formData.person_occupation}

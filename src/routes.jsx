@@ -8,7 +8,7 @@ const Contact = lazy(() => import("./pages/contact"));
 
 export const routes = [
   {
-    name: "home",
+    name: "Home",
     path: "/home",
     element: <Home />,
   },

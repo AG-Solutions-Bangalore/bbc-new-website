@@ -205,7 +205,7 @@ export function Navbar({ routes, action }) {
                   </button>
                 </Link>
                 <a
-                  href="https://businessboosters.club/login"
+                  href="https://businessboosters.club/login/"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -237,80 +237,87 @@ export function Navbar({ routes, action }) {
 
       {/* Full-page mobile menu overlay */}
       <div
-        className={`fixed inset-0 z-40 transition-opacity duration-300 lg:hidden ${
-          openNav ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+        className={`fixed inset-0 z-40 lg:hidden transition-all duration-500 ease-in-out ${
+          openNav ? "pointer-events-auto" : "pointer-events-none"
         }`}
       >
-            {/* Background gradient overlay */}
-            <div
-              className={`absolute inset-0 bg-gradient-to-br from-[#A51B64] to-[#4A064D] transition-opacity duration-300 ${
-                openNav ? "opacity-[0.98]" : "opacity-0"
-              }`}
-            />
+        {/* Background gradient overlay */}
+        <div
+          className={`absolute inset-0 bg-gradient-to-br from-[#A51B64] to-[#4A064D] transition-opacity duration-500 ease-in-out ${
+            openNav ? "opacity-98" : "opacity-0"
+          }`}
+        />
 
-            {/* Content container */}
-            <div className="relative h-full w-full flex flex-col p-6 overflow-y-auto">
-              {/* Logo */}
+        {/* Content container */}
+        <div
+          className={`relative h-full w-full flex flex-col p-6 overflow-y-auto transition-all duration-500 ease-in-out ${
+            openNav ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+          }`}
+        >
+          {/* Close button container */}
+          <div className="h-16 flex items-center justify-end">
+            {/* The actual icon button is rendered inside the fixed bar above, 
+                 but we keep this container to preserve spacing */}
+          </div>
 
-              {/* Divider */}
-              <div
-                className={`h-1 bg-pink-300 rounded mx-auto mb-10 transition-all duration-500 ${
-                  openNav ? "w-16" : "w-0"
-                }`}
-                style={{ transitionDelay: openNav ? "300ms" : "0ms" }}
-              />
+          {/* Divider */}
+          <div
+            className={`h-1 bg-pink-300 rounded mx-auto mb-10 transition-all duration-700 ease-out ${
+              openNav ? "w-16" : "w-0"
+            }`}
+          />
 
-              {/* Navigation items */}
-              <div className="flex-1 flex flex-col items-center justify-center">
-                {mobileNavList}
-              </div>
+          {/* Navigation items */}
+          <div className="flex-1 flex flex-col items-center justify-center">
+            {mobileNavList}
+          </div>
 
-              {/* Action buttons */}
-              <div
-                className={`mt-8 mb-12 space-y-4 transition-all duration-500 ${
-                  openNav ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
-                }`}
-                style={{
-                  transitionDelay: openNav ? `${400 + routes.length * 100}ms` : "0ms",
-                }}
+          {/* Action buttons */}
+          <div
+            className={`mt-8 mb-12 space-y-4 transition-all duration-500 delay-300 ${
+              openNav ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+            }`}
+            style={{
+              transitionDelay: openNav ? `${300 + routes.length * 100}ms` : "0ms",
+            }}
+          >
+            <Link to='/register' className="block">
+              <button
+                type="button"
+                onClick={() => setOpenNav(false)}
+                className="w-full rounded-lg py-3 px-7 text-base bg-white text-[#A51B64] hover:bg-pink-50 transition-colors align-middle select-none font-sans font-bold text-center uppercase"
               >
-                <Link to='/register' className="block">
-                  <button
-                    type="button"
-                    onClick={() => setOpenNav(false)}
-                    className="w-full rounded-lg py-3 px-7 text-base bg-white text-[#A51B64] hover:bg-pink-50 transition-colors align-middle select-none font-sans font-bold text-center uppercase"
-                  >
-                    Join Us
-                  </button>
-                </Link>
-                <a
-                  href="https://businessboosters.club/login"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setOpenNav(false)}
-                    className="w-full rounded-lg py-3 px-7 text-base border border-white text-white hover:bg-white/10 transition-colors align-middle select-none font-sans font-bold text-center uppercase"
-                  >
-                    Login
-                  </button>
-                </a>
-              </div>
-
-              {/* Social links or other footer info could go here */}
-              <div
-                className={`text-center text-white/80 text-sm transition-opacity duration-500 ${
-                  openNav ? "opacity-100" : "opacity-0"
-                }`}
-                style={{
-                  transitionDelay: openNav ? `${600 + routes.length * 100}ms` : "0ms",
-                }}
+                Join Us
+              </button>
+            </Link>
+            <a
+              href="https://businessboosters.club/login/"
+              target="_blank"
+              rel="noreferrer"
+              className="block"
+            >
+              <button
+                type="button"
+                onClick={() => setOpenNav(false)}
+                className="w-full rounded-lg py-3 px-7 text-base border border-white text-white hover:bg-white/10 transition-colors align-middle select-none font-sans font-bold text-center uppercase"
               >
-                Connect with Business Boosters
-              </div>
-            </div>
+                Login
+              </button>
+            </a>
+          </div>
+
+          {/* Social links or other footer info could go here */}
+          <div
+            className={`text-center text-white/80 text-sm transition-opacity duration-500 ${
+              openNav ? "opacity-100" : "opacity-0"
+            }`}
+            style={{
+              transitionDelay: openNav ? `${600 + routes.length * 100}ms` : "0ms",
+            }}
+          >
+            Connect with Business Boosters
+          </div>
+        </div>
       </div>
     </>
   );
@@ -329,8 +336,3 @@ Navbar.propTypes = {
 Navbar.displayName = "/src/widgets/layout/navbar.jsx";
 
 export default Navbar;
-
-
-
-
-
