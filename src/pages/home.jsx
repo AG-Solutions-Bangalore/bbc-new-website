@@ -180,29 +180,42 @@ export function Home() {
             whileInView="show"
             viewport={{ once: true, amount: 0.25 }}
           >
-            {featuresData.map(({ color, title, icon, description, link }, index) => (
-              <motion.div key={title} variants={staggerItem}>
-                <Link to={link} className="block">
-                  <motion.div
-                    whileHover={{ 
-                      scale: 1.05,
-                      boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-                      y: -10
-                    }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    <FeatureCard
-                      color={color}
-                      title={title}
-                      icon={React.createElement(icon, {
-                        className: "w-5 h-5 text-white",
-                      })}
-                      description={description}
-                    />
-                  </motion.div>
-                </Link>
-              </motion.div>
-            ))}
+            {featuresData.map(({ color, title, icon, description, link }, index) => {
+              const isExternal = link.startsWith("http");
+              const cardContent = (
+                <motion.div
+                  whileHover={{ 
+                    scale: 1.05,
+                    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                    y: -10
+                  }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <FeatureCard
+                    color={color}
+                    title={title}
+                    icon={React.createElement(icon, {
+                      className: "w-5 h-5 text-white",
+                    })}
+                    description={description}
+                  />
+                </motion.div>
+              );
+
+              return (
+                <motion.div key={title} variants={staggerItem}>
+                  {isExternal ? (
+                    <a href={link} className="block">
+                      {cardContent}
+                    </a>
+                  ) : (
+                    <Link to={link} className="block">
+                      {cardContent}
+                    </Link>
+                  )}
+                </motion.div>
+              );
+            })}
           </motion.div>
 
           {/* About Us Section */}

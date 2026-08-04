@@ -67,7 +67,22 @@ export function Register() {
       newErrors.products = "Products/Services details are required";
     if (!selectedImage) newErrors.selectedImage = "Profile image is required";
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    
+    const hasErrors = Object.keys(newErrors).length > 0;
+    if (hasErrors) {
+      const firstErrorKey = Object.keys(newErrors)[0];
+      setTimeout(() => {
+        const firstErrorEl = document.querySelector(
+          `[name="${firstErrorKey}"], #${firstErrorKey}, [id="${firstErrorKey}"]`
+        );
+        if (firstErrorEl) {
+          firstErrorEl.focus();
+          firstErrorEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 50);
+    }
+
+    return !hasErrors;
   };
 
   const handleInputChange = (e) => {
@@ -194,7 +209,8 @@ export function Register() {
                 <Select
                   variant="static"
                   required
-
+                  name="gender"
+                  id="gender"
                   label="Gender *"
                   labelProps={{ className: "!text-[#A41460]" }}
                   onChange={(value) =>

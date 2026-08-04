@@ -198,7 +198,7 @@ export function Navbar({ routes, action }) {
                   </Button>
                 </Link>
                 <a
-                  href="https://login.businessboosters.club/login"
+                  href="https://businessboosters.club/login/"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -278,7 +278,7 @@ export function Navbar({ routes, action }) {
                   </Button>
                 </Link>
                 <a
-                  href="https://login.businessboosters.club/login"
+                  href="https://businessboosters.club/login/"
                   target="_blank"
                   rel="noreferrer"
                   className="block"

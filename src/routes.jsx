@@ -6,7 +6,7 @@ import { Home, Profile } from "./pages";
 
 export const routes = [
   {
-    name: "home",
+    name: "Home",
     path: "/home",
     element: <Home />,
   },
