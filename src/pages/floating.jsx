@@ -1,11 +1,25 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import gif from "../../public/img/event.gif";
 
 const Floating = () => {
   const { pathname } = useLocation();
+  const [showFloating, setShowFloating] = useState(false);
 
-  if (pathname === "/interest" || pathname.startsWith("/business-profile/")) {
+  useEffect(() => {
+    const scheduleIdleTask =
+      window.requestIdleCallback || ((callback) => window.setTimeout(callback, 1));
+    const cancelIdleTask = window.cancelIdleCallback || window.clearTimeout;
+    const taskId = scheduleIdleTask(() => setShowFloating(true));
+
+    return () => cancelIdleTask(taskId);
+  }, []);
+
+  if (
+    !showFloating ||
+    pathname === "/interest" ||
+    pathname.startsWith("/business-profile/")
+  ) {
     return null;
   }
 
@@ -15,6 +29,10 @@ const Floating = () => {
         <img
           src={gif}
           alt="Floating gif"
+          width="151"
+          height="91"
+          loading="lazy"
+          decoding="async"
           className="w-[100px] transition-transform duration-300 ease-in-out hover:scale-110 md:w-[150px]"
         />
       </Link>

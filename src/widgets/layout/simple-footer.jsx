@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { Typography } from "@material-tailwind/react";
+import { Typography } from "@material-tailwind/react/components/Typography";
 import { HeartIcon } from "@heroicons/react/24/solid";
 
 export function SimpleFooter({ brandName, brandLink, routes }) {

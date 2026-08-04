@@ -1,8 +1,10 @@
+import { lazy } from "react";
 
-import Services from "./pages/services";
-import Gallery from "./pages/gallery";
-import Contact from "./pages/contact";
-import { Home, Profile } from "./pages";
+const Home = lazy(() => import("./pages/home"));
+const Profile = lazy(() => import("./pages/profile"));
+const Services = lazy(() => import("./pages/services"));
+const Gallery = lazy(() => import("./pages/gallery"));
+const Contact = lazy(() => import("./pages/contact"));
 
 export const routes = [
   {

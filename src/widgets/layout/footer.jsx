@@ -1,57 +1,66 @@
 import PropTypes from "prop-types";
-import { Typography, IconButton } from "@material-tailwind/react";
-import { Link } from "react-router-dom";
-import { MapPinIcon, EnvelopeIcon, PhoneIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { updateVisitorCount } from "@/lib/api";
 
 const year = new Date().getFullYear();
 
 export function Footer({ title, description, socials, menus, copyright }) {
+  const [visitorCount, setVisitorCount] = useState(
+    () => localStorage.getItem("visitor_count") || ""
+  );
+
   useEffect(() => {
-    // Fix: Use the same key name consistently
     if (!localStorage.getItem("visitor_count")) {
-      axios
-        .post("https://businessboosters.club/public/api/updateVisitorCount")
-        .then((response) => {
-          if (response.data?.code == 200) {
-            localStorage.setItem("visitor_count", response.data.visitorCount)
-          }
-        })
-        .catch((error) => console.error("Error fetching visitor count:", error));
+      const scheduleIdleTask =
+        window.requestIdleCallback || ((callback) => window.setTimeout(callback, 1));
+      const cancelIdleTask = window.cancelIdleCallback || window.clearTimeout;
+
+      const taskId = scheduleIdleTask(() => {
+        updateVisitorCount()
+          .then((data) => {
+            if (data?.code == 200) {
+              localStorage.setItem("visitor_count", data.visitorCount);
+              setVisitorCount(data.visitorCount);
+            }
+          })
+          .catch((error) => console.error("Error fetching visitor count:", error));
+      });
+
+      return () => cancelIdleTask(taskId);
+    } else {
+      setVisitorCount(localStorage.getItem("visitor_count") || "");
     }
+
+    return undefined;
   }, []);
 
   return (
     <footer className="relative px-4 pt-2 pb-6">
       <div className="container mx-auto ">
-        
+
 
         <hr className="my-6 border-gray-300" />
         <div className="flex flex-wrap items-center justify-between">
   <div className="w-full md:w-auto px-16 text-center   md:text-left">
-    <Typography
-      variant="small"
-      className="font-normal text-blue-gray-500"
-    >
+    <p className="block antialiased font-sans text-sm leading-normal font-normal text-blue-gray-500">
       {copyright}
-    </Typography>
+    </p>
   </div>
   <div className="w-full md:w-auto px-4 text-center md:text-right">
     <p className="font-semibold text-blue-gray-700">
-      Visitor No: {localStorage.getItem("visitor_count")}
+      Visitor No: {visitorCount}
     </p>
   </div>
 </div>
-       
+
       </div>
-     
+
     </footer>
   );
 }
 
 Footer.defaultProps = {
- 
+
   copyright: (
     <>
       Copyright © {year} Business Boosters. All rights reserved.

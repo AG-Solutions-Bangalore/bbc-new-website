@@ -1,14 +1,11 @@
 import React, { useState } from "react";
-import {
-  Input,
-  Select,
-  Option,
-  Checkbox,
-  Button,
-  Card,
-  Textarea,
-} from "@material-tailwind/react";
-import { Footer } from "@/widgets/layout";
+import { Button } from "@material-tailwind/react/components/Button";
+import { Card } from "@material-tailwind/react/components/Card";
+import { Checkbox } from "@material-tailwind/react/components/Checkbox";
+import { Input } from "@material-tailwind/react/components/Input";
+import { Option, Select } from "@material-tailwind/react/components/Select";
+import { Textarea } from "@material-tailwind/react/components/Textarea";
+import { Footer } from "@/widgets/layout/footer";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";

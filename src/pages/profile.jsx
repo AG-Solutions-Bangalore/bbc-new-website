@@ -1,15 +1,17 @@
-import { Avatar, Typography, Button, Card, CardBody } from "@material-tailwind/react";
+import { Card, CardBody } from "@material-tailwind/react/components/Card";
+import { Typography } from "@material-tailwind/react/components/Typography";
 import {
   MapPinIcon,
   BriefcaseIcon,
   BuildingLibraryIcon,
 } from "@heroicons/react/24/solid";
-import { Footer, PageTitle } from "@/widgets/layout";
+import { Footer } from "@/widgets/layout/footer";
+import { PageTitle } from "@/widgets/layout/page-title";
 import { Link } from "react-router-dom";
-import { TeamSlider } from "@/widgets/cards";
+import { TeamSlider } from "@/widgets/cards/team-card";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import TeamSliderPartner from "@/widgets/cards/team-card-partner";
+import { fetchUsers, getUserImageUrl } from "@/lib/api";
 
 export function Profile() {
   const [teamData, setTeamData] = useState([]);
@@ -20,17 +22,13 @@ export function Profile() {
     const fetchUserData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get("https://businessboosters.club/public/api/getUser");
-        if (response.data && response.data.profile) {
-          const mappedData = response.data.profile.map((user) => ({
-            img: user.image
-              ? `http://businessboosters.club/public/images/user_images/${user.image}`
-              : "http://businessboosters.club/public/images/user_images/no_images.png", 
-            name: user.name || "Unknown",
-            position: user.company_short || "Member",
-          }));
-          setTeamData(mappedData);
-        }
+        const users = await fetchUsers();
+        const mappedData = users.map((user) => ({
+          img: getUserImageUrl(user.image),
+          name: user.name || "Unknown",
+          position: user.company_short || "Member",
+        }));
+        setTeamData(mappedData);
       } catch (error) {
         console.error("Error fetching user data:", error);
         setError("Failed to load user data.");

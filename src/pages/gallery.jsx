@@ -1,5 +1,5 @@
-import { Footer } from "@/widgets/layout";
-import { Button, Typography } from "@material-tailwind/react";
+import { Footer } from "@/widgets/layout/footer";
+import { Typography } from "@material-tailwind/react/components/Typography";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 
